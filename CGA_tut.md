@@ -2,7 +2,7 @@
 
 **version** x 
 
-​	indicating release information, x --*string*
+​	indicating CityEngine release information, x --*string* version of CityEngine *e.g. 2019.1*
 
 **@Group**(x,y) 
 
