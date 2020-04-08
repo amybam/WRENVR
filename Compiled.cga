@@ -1,0 +1,53 @@
+/**
+ * File:     Building_Facade.cga
+ * Created:  5 April 2020
+ * Author:   Kevin Huberty
+ */
+
+ version "2019.1"
+
+@Group("FLOORS")
+
+@Order(1)
+attr Ground_Floor_Height = rand(3,5)
+@Order(2)
+attr Upper_Floor_Height = rand(3.2,4)
+@Order(3)
+attr Foundation_Height = 0.01
+
+ @StartRule
+ BuildingMultipatch-->
+    alighScopeToAxes(y)
+    cleanupGeometry(edges, 0.5
+    RoofsBeforeFloorSplits
+    [case ShowFacade: BuildingSplitFacadeShell else: NIL]
+	[case ShowFloors: BuildingSplitFloors else: NIL]
+
+BuildingSplitFacadeShell --> comp(f) {bottom: NIL | all= BuildingSplit("Shell")}
+	
+BuildingSplitFloors --> BuildingSplit("Floors")
+
+BuildingSplit(type) -->
+    alighScopeToAxes(y)
+    split(y){
+        Foundation_Height:
+            set(_massType, "Foundation")
+            set(_floorHeight, Foundation_Height)
+            [case type == "Shell": FloorShell else: FloorMass] 
+			NIL | 
+        Ground_Floor_Height:
+            set(_massType, "Upper")
+            set(_floorHeight, Ground_Floor_Height)
+            [case type == "Shell": FloorShell else: FloorMass]
+			NIL |
+        {Upper_Floor_Height: 
+			set(_massType, "Upper")
+			set(_floorHeight, Upper_Floor_Height)
+			[case type == "Shell": FloorShell else: FloorMass]
+			NIL}* |
+    }
+
+RoofsBeforeFloorSplits --> 
+	case ShowFacade:
+ 		comp(f){aslant: Aslant | top: Top | all: NIL}
+ 	else: NIL

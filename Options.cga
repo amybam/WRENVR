@@ -1,0 +1,93 @@
+/**
+ * File:     Options.cga
+ * Created:  5 April 2020
+ * Author:   Kevin Huberty
+ */
+
+ version "2019.1"
+ 
+ import building : "Referenced/building.cga"
+
+ @Group("Options")
+ @Order(1)
+ attr Option = "Standard Window"
+
+
+ attr groundfloor_height = 4
+ attr floor_height 		= 3.5
+ attr tile_width 		= 3
+ attr height 			= 11 
+ @Color
+ attr wallColor          = "#fff"
+
+ window_asset = "facades/window.obj"
+
+
+ @StartRule
+ @StartRule
+
+ Lot --> 
+	extrude(height) Building
+
+ LotInner --> NIL
+
+ Building -->
+	comp(f) { front : Frontfacade | side : Sidefacade}
+
+ Frontfacade -->
+    case Option == "Standard Window"	
+	    setupProjection(0, scope.xy, 1.5, 1, 0, 0, 1)
+	    setupProjection(2, scope.xy, scope.sx, scope.sy)
+	    split(y){ groundfloor_height    : Groundfloor 
+			| {~floor_height : Floor}* }
+
+ Sidefacade --> 
+	case Option == "Standard Window"	
+        setupProjection(0, scope.xy, 1.5, 1, 0, 0, 1)
+	    setupProjection(2, scope.xy, scope.sx, scope.sy)
+	    split(y){ groundfloor_height    : Floor 
+			| {~floor_height : Floor}* }
+	
+ Floor -->
+	case Option == "Standard Window"	
+        split(x){ 1 : Wall 
+			|   { ~tile_width : Tile }* 
+			|   1 : Wall }
+	
+ Groundfloor -->
+	case Option == "Standard Window"	
+        split(x){ 1 			: Wall 
+			    | { ~tile_width : Tile }* 
+			    | ~tile_width 	: EntranceTile 
+			    | 1 			: Wall }
+		
+ Tile -->
+	case Option == "Standard Window"	
+        split(x){ ~1 : Wall 
+			|  2 : split(y){ ~1: Wall | 1.5: Window | ~1: Wall }
+			| ~1 : Wall }		 
+	
+ EntranceTile -->
+	case Option == "Standard Window"	
+        split(x){ ~1 : SolidWall 
+			| 2  : split(y){ 2.5: Door | ~2: SolidWall } 
+			| ~1 : SolidWall }
+	
+ Window -->
+	s('1,'1,0.4)
+	t(0,0,-0.25)
+	i(window_asset)  
+	
+ Door -->
+	s('1,'1,0.1)
+	t(0,0,-0.5)
+	primitiveCube()	  
+
+ Wall -->
+	color(wallColor)
+
+ SolidWall -->
+	color(wallColor)
+	s('1,'1,0.4) 
+	t(0,0,-0.4) 
+	primitiveCube()	
